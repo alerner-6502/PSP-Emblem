@@ -1,0 +1,6 @@
+Instructions:
+  * Launch the "AC_Emblem_Creator.exe" executable and simply follow the steps (the application will guide you through the process).
+
+Notes: 
+  * Please avoid tempering with the "RESOURCES" folder. Every single file inside that folder is used and relied on.
+  * Don't delete/rename the "NPUH10023AC3EMBLEMLIST00" folder. The application expects it to be there.

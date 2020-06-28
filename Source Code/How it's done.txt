@@ -1,0 +1,46 @@
+====================================== How it's done =================================================
+Author: Anatoly Lerner
+
+The actual emblem is located in the "SAVEDATA.BIN" file.
+The purpose of the second data based file ("PARAM.SFO") is unknown.
+
+Emblem dimensions: 128 by 128 pixels
+Emblem format: 256 color bitmap
+Emblem representation: One byte per pixel. Each byte references the 256 color palette.
+Palette format: One transparent color + 255 colors (24-bit)
+Palette representation: 4 bytes per color, RGBA order (where A stands for transparency)
+Note: The A channel isn't actually used to it's full 256 value potential.
+      The pixel is considered transparent if A = 0x00.
+	  Otherwise the pixel is considered to be fully opaque.
+
+The memory map of the "SAVEDATA.BIN" file has the following structure:
+
+	[$0000, $002F] - Unknown
+	[$0030, $402F] - Bitmap
+			    Size: 16384 bytes ( = 128*128)
+			    Pixel order: Left->Right & Top->Bottom.
+	[$4030, $442F] - Palette
+			    Size: 1024 bytes ( = 256*4)
+			    Index order: Left->Right & Top->Bottom.
+	[$4430, $480F] - Unknown
+
+Unfortunately, the "SAVEDATA.BIN" file is encrypted. To make matters worse a new encryption key is applied every time the emblem is saved.
+However there are some weaknesses:
+	* There are no checksums of any kind, especially the encrypted ones. (freedom to modify the content however we like)
+	* The encryption algorithm used is very simple
+
+The encryption algorithm:
+	Each time the emblem is saved a new key is generated. The size and the location of this key is unknown. 
+	After that, the key is expanded into a sequence of byte sized sub-keys which are then
+	XOR-ed with the actual data. The result is the "SAVEDATA.BIN" file.
+	
+How the encryption was bypassed:
+	By zeroing out the "actual data" we actually expose the subkeys that were used to encrypt it:
+	[0x00] XOR [Subkey] = [Subkey]
+	Because we now know the subkeys, we can inject whatever data we like simply by reapplying the encryption:
+	[New_Data] XOR [Subkey] = [Encrypted New_Data]
+	And that's it! Without actually figuring out the algorithm and the value of the main key, we were able to inject
+	new data into the encrypted file.
+	Zeroing out the "actual data" is quite simple too. All you have to do is create a blank emblem/palette in the emeblem editor.
+
+
